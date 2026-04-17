@@ -1,3 +1,4 @@
+from app.services.ai_service import generate_polished_message
 from app.services.prompt_service import build_prompt
 from app.services.text_service import clean_text
 
@@ -8,11 +9,11 @@ def main():
 
     prompt = build_prompt(message)
 
-    print("\n==== GENERATED PROMPT ====\n")
-    print(prompt)
+    result = generate_polished_message(prompt)
 
-    print("\n==== CLEANED MESSAGE ====\n")
-    print(message)
+    print("\n==== POLISHED MESSAGE ====\n")
+    print(result)
+
 
 if __name__ == "__main__":
     main()
