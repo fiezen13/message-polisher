@@ -14,6 +14,40 @@ STYLE_RULES = {
     ),
 }
 
+RECIPIENT_GUIDANCE = {
+    "professor": "Use respectful language suitable for academic communication.",
+    "recruiter": "Use concise and professional language suitable for hiring communication.",
+    "manager": "Use polite internal-business wording with clear accountability.",
+    "client": "Use formal customer-facing wording with careful tone.",
+    "teammate": "Use polite and collaborative wording.",
+    "unknown": "Use neutral polite wording without assuming hierarchy.",
+}
+
+PURPOSE_GUIDANCE = {
+    "request_extension": "State the request clearly and include a brief, respectful reason.",
+    "follow_up": "Be concise, reference prior context, and ask for next-step confirmation.",
+    "apology": "Acknowledge inconvenience and use sincere, non-defensive wording.",
+    "scheduling": "Clarify proposed time/date and ask for confirmation politely.",
+    "escalation": "Describe issue factually and request support calmly.",
+    "gratitude": "Express thanks clearly and professionally.",
+    "other": "Keep the message natural and context-appropriate.",
+}
+
+TONE_TO_STYLE_MODE = {
+    "formal": "formal_keigo",
+    "apologetic": "formal_keigo",
+    "friendly": "casual_polite",
+    "assertive": "neutral_business",
+    "neutral": "neutral_business",
+}
+
+VARIANT_STYLE_RULES = {
+    "formal": "Use formal business keigo, concise and respectful.",
+    "friendly": "Use warm but polite language. Keep it natural and approachable.",
+    "concise": "Keep the sentence brief while preserving all key facts.",
+    "highly_professional": "Use highly polished professional Japanese suitable for external stakeholders.",
+}
+
 INTENT_EXTRACTION_PROMPT = (
     "You are extracting intent from Japanese user text for rewriting.\n"
     "Return ONLY valid JSON with keys:\n"
@@ -39,4 +73,17 @@ GENERATION_PROMPT_TEMPLATE = (
     "{context_json}\n\n"
     "INTENT JSON:\n"
     "{intent_json}"
+)
+
+EXPLANATION_PROMPT_TEMPLATE = (
+    "You are a writing coach.\n"
+    "Given original and rewritten Japanese messages, return ONLY valid JSON with key `explanations`.\n"
+    "`explanations` must be a list of 2 to 4 short English bullets describing meaningful changes.\n"
+    "No markdown, no extra keys.\n\n"
+    "CONTEXT:\n"
+    "{context_json}\n\n"
+    "ORIGINAL:\n"
+    "{original}\n\n"
+    "REWRITTEN:\n"
+    "{rewritten}"
 )
