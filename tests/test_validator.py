@@ -11,3 +11,13 @@ def test_validator_accepts_simple_text():
     ok, reason = validate_polished_output("ご確認をお願いいたします。", "confirm this")
     assert ok
     assert reason == ""
+
+
+def test_validator_rejects_missing_key_facts():
+    ok, reason = validate_polished_output(
+        "明日、ご確認をお願いいたします。",
+        "Please confirm by 10:00.",
+        key_facts=["10:00"],
+    )
+    assert not ok
+    assert reason == "missing_key_facts"
