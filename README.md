@@ -1,34 +1,24 @@
 # Message Polisher
 
-Ứng dụng hỗ trợ viết lại tin nhắn công việc theo **ngữ cảnh** (recipient / tone / purpose), ưu tiên **tiếng Nhật**, có thể nhận input **tiếng Việt** và trả output **tiếng Nhật**.
+Tool nhỏ để **chỉnh tin nhắn công việc sang tiếng Nhật** theo ngữ cảnh bạn chọn (ai nhận, tone, mục đích, mức chi tiết). Bạn có thể gõ **tiếng Việt** ở đầu vào, kết quả mặc định là **tiếng Nhật**.
 
-## Tính năng hiện tại
+Mục tiêu: hỗ trợ message kiểu email/chat nội bộ (giáo viên, recruiter, quản lý, khách hàng) thay vì “paraphrase chung chung”.
 
-- **Polish theo ngữ cảnh**: `recipient_type`, `tone`, `purpose`, `detail_level`.
-- **Đa ngôn ngữ nguồn**: `source_language` (`vi`, `ja`, `en`) với output `language` hiện cố định `ja`.
-- **Kết quả có cấu trúc**:
-  - `rewritten_message`
-  - `quick_variants` (`formal`, `friendly`, `concise`, `highly_professional`)
-  - `meta`, `safety_flags`
-- **API**: FastAPI (`POST /api/v1/polish`, `GET /health`).
-- **Web UI**: Streamlit (`scripts/web_ui.py`) để test nhanh.
-- **CLI cũ** (rewrite đơn giản theo `style_mode`): `scripts/message_cli.py`.
-- **Tests**: `pytest`.
+## Bạn sẽ nhận được gì
 
-## Kiến trúc (tóm tắt)
+Khi gọi API (hoặc dùng UI), response thường gồm:
 
-- `app/main.py`: FastAPI app + endpoint.
-- `app/api/schemas.py`: Pydantic request/response.
-- `app/services/ai_service.py`: orchestration (intent -> rewrite -> variants).
-- `app/services/context_resolver.py`: resolve guidance theo recipient/tone/purpose/detail.
-- `app/core/config.py`: policy text + prompt templates.
+- Một bản chính: `rewritten_message`
+- Bốn biến thể nhanh: `quick_variants` (formal / friendly / concise / highly_professional)
+- Một chút metadata: `meta` và `safety_flags` (cảnh báo mức độ mơ hồ, thiếu context, v.v.)
 
-## Yêu cầu môi trường
+Lưu ý: chất lượng phụ thuộc model/provider và cách bạn chọn `tone/purpose/detail_level`. Nếu output vẫn “dịch cứng”, thử tăng `detail_level` hoặc đổi `tone/purpose` cho sát tình huống hơn.
 
-- Python 3.10+ (repo hiện đang test trên 3.10).
-- Groq API key: `GROQ_API_KEY`.
+## Cách dùng nhanh (không cần đọc phần API)
 
-## Cài đặt
+### 1) Cài dependency
+
+Yêu cầu: Python 3.10+.
 
 ```bash
 python -m venv .venv
@@ -36,24 +26,49 @@ source .venv/bin/activate
 pip install -r requirements-dev.txt
 ```
 
-Tạo file `.env` ở **thư mục gốc repo** (khuyến nghị) hoặc đặt biến môi trường trực tiếp:
+### 2) Cấu hình API key (Groq)
+
+Ứng dụng cần biến môi trường `GROQ_API_KEY`.
+
+Cách phổ biến: tạo file `.env` ở thư mục gốc repo (file này đang được ignore, đừng commit):
 
 ```bash
-export GROQ_API_KEY="your_key_here"
+GROQ_API_KEY=...
 ```
 
-Lưu ý: không commit file chứa secret. Repo đã ignore `.env` (xem `.gitignore`).
+### 3) Chạy giao diện (Streamlit)
 
-## Chạy API (FastAPI)
+```bash
+streamlit run scripts/web_ui.py
+```
+
+Trong form:
+
+- `Source language`: thường chọn `vi` nếu bạn gõ tiếng Việt
+- `Recipient / Tone / Purpose`: chọn cho đúng tình huống
+- `Detail level`:
+  - `concise`: câu ngắn, ưu tiên xin phép/đi thẳng ý
+  - `balanced`: mặc định, cân bằng
+  - `detailed`: cho phép giải thích rõ hơn nếu cần
+
+Nếu bạn vừa cập nhật code mà UI báo lỗi kiểu `unexpected keyword argument ...`, dừng hẳn Streamlit (Ctrl+C) rồi chạy lại để reload module.
+
+## Dành cho developer (tích hợp / tự host)
+
+### Chạy API local
 
 ```bash
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-- Health: `GET http://127.0.0.1:8000/health`
-- Docs: `http://127.0.0.1:8000/docs`
+- Health: `GET /health`
+- Swagger: `/docs`
 
-### Ví dụ request `POST /api/v1/polish`
+### Endpoint chính
+
+`POST /api/v1/polish`
+
+Ví dụ payload:
 
 ```json
 {
@@ -67,38 +82,32 @@ uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 }
 ```
 
-## Chạy Web UI (Streamlit)
+`language` hiện đang cố định là `ja` (output). `source_language` cho biết ngôn ngữ đầu vào.
+
+### CLI (pipeline cũ, đơn giản)
 
 ```bash
-streamlit run scripts/web_ui.py
+python scripts/message_cli.py
 ```
 
-Nếu bạn vừa sửa signature Python (ví dụ thêm field mới) mà UI báo lỗi kiểu `unexpected keyword argument`, hãy **dừng hẳn** Streamlit rồi chạy lại để reload module.
+CLI này đi theo `style_mode` kiểu `neutral_business / formal_keigo / casual_polite`, không phản ánh đầy đủ UI/API mới.
 
-## Chạy tests
+## Kiểm thử
 
 ```bash
 pytest
 ```
 
-## Eval script (legacy)
+## Script eval trong repo (đọc kỹ trước khi tin số liệu)
 
-`scripts/evaluate.py` hiện đánh giá theo pipeline cũ `generate_polished_message` + `eval/eval_cases.json`. Nó **chưa** reflect đầy đủ contract mới (`/api/v1/polish`). Dùng để smoke test nhanh, không nên coi là benchmark chính thức cho product mới cho đến khi được nâng cấp.
+`scripts/evaluate.py` + `eval/eval_cases.json` hiện đánh giá theo `generate_polished_message` (legacy). Nó **chưa khớp hoàn toàn** contract `/api/v1/polish`, nên phù hợp smoke test nhanh hơn là benchmark sản phẩm.
 
-## Mức độ “hoàn thiện” (thực tế)
+## Trạng thái dự án (thẳng thắn)
 
-Hiện tại phù hợp mục tiêu **MVP nội bộ / demo có giá trị**:
+Phù hợp demo/MVP nội bộ: có UI, có API, có test cơ bản.
 
-- Đã có product loop cơ bản: UI/API -> model -> variants -> meta.
-- Đã có tests tự động cho API + resolver + một phần pipeline.
-
-Chưa đủ mức production-ready nếu bạn muốn public deploy:
-
-- chưa có auth/rate limit/cost control,
-- chưa có observability chuẩn (structured logging, tracing),
-- eval/benchmark cho contract mới chưa đồng bộ,
-- chưa có packaging/deploy (Docker/CI) trong repo.
+Chưa gọi là production-ready nếu bạn public deploy: chưa có auth, rate limit, logging/observability đầy đủ, packaging/deploy chuẩn (Docker/CI) trong repo.
 
 ## License
 
-Chưa khai báo. Thêm file license nếu bạn open-source.
+Chưa đặt. Thêm `LICENSE` nếu bạn open-source.
