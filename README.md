@@ -1,24 +1,13 @@
 # Message Polisher
 
-Tool nhỏ để **chỉnh tin nhắn công việc sang tiếng Nhật** theo ngữ cảnh bạn chọn (ai nhận, tone, mục đích, mức chi tiết). Bạn có thể gõ **tiếng Việt** ở đầu vào, kết quả mặc định là **tiếng Nhật**.
+Ứng dụng chỉnh tin nhắn sang tiếng Nhật theo ngữ cảnh (người nhận, tone, mục đích, mức chi tiết). Hỗ trợ đầu vào `vi` / `ja` / `en`, output hiện cố định `ja`.
 
-Mục tiêu: hỗ trợ message kiểu email/chat nội bộ (giáo viên, recruiter, quản lý, khách hàng) thay vì “paraphrase chung chung”.
+## Yêu cầu
 
-## Bạn sẽ nhận được gì
+- Python 3.10+
+- Biến môi trường `GROQ_API_KEY`
 
-Khi gọi API (hoặc dùng UI), response thường gồm:
-
-- Một bản chính: `rewritten_message`
-- Bốn biến thể nhanh: `quick_variants` (formal / friendly / concise / highly_professional)
-- Một chút metadata: `meta` và `safety_flags` (cảnh báo mức độ mơ hồ, thiếu context, v.v.)
-
-Lưu ý: chất lượng phụ thuộc model/provider và cách bạn chọn `tone/purpose/detail_level`. Nếu output vẫn “dịch cứng”, thử tăng `detail_level` hoặc đổi `tone/purpose` cho sát tình huống hơn.
-
-## Cách dùng nhanh (không cần đọc phần API)
-
-### 1) Cài dependency
-
-Yêu cầu: Python 3.10+.
+## Cài đặt
 
 ```bash
 python -m venv .venv
@@ -26,49 +15,39 @@ source .venv/bin/activate
 pip install -r requirements-dev.txt
 ```
 
-### 2) Cấu hình API key (Groq)
+Kích hoạt venv trên Windows:
 
-Ứng dụng cần biến môi trường `GROQ_API_KEY`.
+```text
+.venv\Scripts\activate
+```
 
-Cách phổ biến: tạo file `.env` ở thư mục gốc repo (file này đang được ignore, đừng commit):
+Tạo `.env` ở thư mục gốc repo (đã ignore, không commit):
 
 ```bash
 GROQ_API_KEY=...
 ```
 
-### 3) Chạy giao diện (Streamlit)
+## Chạy UI (Streamlit)
 
 ```bash
 streamlit run scripts/web_ui.py
 ```
 
-Trong form:
+Form tương ứng các field: `source_language`, `recipient_type`, `tone`, `purpose`, `detail_level`.
 
-- `Source language`: thường chọn `vi` nếu bạn gõ tiếng Việt
-- `Recipient / Tone / Purpose`: chọn cho đúng tình huống
-- `Detail level`:
-  - `concise`: câu ngắn, ưu tiên xin phép/đi thẳng ý
-  - `balanced`: mặc định, cân bằng
-  - `detailed`: cho phép giải thích rõ hơn nếu cần
+Nếu đổi code Python mà Streamlit báo lỗi kiểu `unexpected keyword argument ...`, dừng tiến trình (Ctrl+C) rồi chạy lại.
 
-Nếu bạn vừa cập nhật code mà UI báo lỗi kiểu `unexpected keyword argument ...`, dừng hẳn Streamlit (Ctrl+C) rồi chạy lại để reload module.
-
-## Dành cho developer (tích hợp / tự host)
-
-### Chạy API local
+## Chạy API (FastAPI)
 
 ```bash
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-- Health: `GET /health`
+- `GET /health`
 - Swagger: `/docs`
+- Endpoint: `POST /api/v1/polish`
 
-### Endpoint chính
-
-`POST /api/v1/polish`
-
-Ví dụ payload:
+Ví dụ body:
 
 ```json
 {
@@ -82,32 +61,40 @@ Ví dụ payload:
 }
 ```
 
-`language` hiện đang cố định là `ja` (output). `source_language` cho biết ngôn ngữ đầu vào.
+`language` chỉ nhận `ja`. `detail_level` mặc định `balanced` nếu không gửi.
 
-### CLI (pipeline cũ, đơn giản)
+## Response
+
+- `rewritten_message`
+- `quick_variants`: `formal`, `friendly`, `concise`, `highly_professional`
+- `meta`, `safety_flags`
+
+## CLI (legacy)
 
 ```bash
 python scripts/message_cli.py
 ```
 
-CLI này đi theo `style_mode` kiểu `neutral_business / formal_keigo / casual_polite`, không phản ánh đầy đủ UI/API mới.
+Pipeline theo `style_mode` (`neutral_business`, `formal_keigo`, `casual_polite`), không tương đương hoàn toàn UI/API mới.
 
-## Kiểm thử
+## Test
 
 ```bash
 pytest
 ```
 
-## Script eval trong repo (đọc kỹ trước khi tin số liệu)
+## Eval (legacy)
 
-`scripts/evaluate.py` + `eval/eval_cases.json` hiện đánh giá theo `generate_polished_message` (legacy). Nó **chưa khớp hoàn toàn** contract `/api/v1/polish`, nên phù hợp smoke test nhanh hơn là benchmark sản phẩm.
+```bash
+python scripts/evaluate.py
+```
 
-## Trạng thái dự án (thẳng thắn)
+Script này gắn với `generate_polished_message` và `eval/eval_cases.json`, không đồng bộ hoàn toàn với `/api/v1/polish`.
 
-Phù hợp demo/MVP nội bộ: có UI, có API, có test cơ bản.
+## Trạng thái
 
-Chưa gọi là production-ready nếu bạn public deploy: chưa có auth, rate limit, logging/observability đầy đủ, packaging/deploy chuẩn (Docker/CI) trong repo.
+Phù hợp chạy local / demo. Chưa bao gồm các phần production đầy đủ (auth, rate limit, observability, CI/CD, container).
 
 ## License
 
-Chưa đặt. Thêm `LICENSE` nếu bạn open-source.
+Chưa có. Thêm `LICENSE` nếu công khai mã nguồn.
