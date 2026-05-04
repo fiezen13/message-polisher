@@ -24,7 +24,11 @@ RECIPIENT_GUIDANCE = {
 }
 
 PURPOSE_GUIDANCE = {
-    "request_extension": "State the request clearly and include a brief, respectful reason.",
+    "request_extension": (
+        "State the deadline extension request clearly in natural business Japanese. "
+        "Prefer humble request patterns like いただけますでしょうか / 幸いです. "
+        "Include a brief, respectful reason if appropriate."
+    ),
     "follow_up": "Be concise, reference prior context, and ask for next-step confirmation.",
     "apology": "Acknowledge inconvenience and use sincere, non-defensive wording.",
     "scheduling": "Clarify proposed time/date and ask for confirmation politely.",
@@ -48,6 +52,23 @@ VARIANT_STYLE_RULES = {
     "highly_professional": "Use highly polished professional Japanese suitable for external stakeholders.",
 }
 
+DETAIL_GUIDANCE = {
+    "concise": (
+        "Keep the message short (typically 1–2 sentences). "
+        "Compress reasons into natural Japanese phrases (e.g., 授業が立て込んでおり) "
+        "instead of literal translations of long explanations."
+    ),
+    "balanced": (
+        "Use a natural length for workplace messaging (usually 2–3 short sentences). "
+        "Include a brief reason if the user provided one, but keep it polite and not report-like."
+    ),
+    "detailed": (
+        "You may use more sentences if needed to explain context clearly, "
+        "while staying polite and professional. Avoid stiff literal translation; "
+        "rewrite reasons to sound like something a Japanese speaker would actually write."
+    ),
+}
+
 INTENT_EXTRACTION_PROMPT = (
     "You are extracting intent from Japanese user text for rewriting.\n"
     "Return ONLY valid JSON with keys:\n"
@@ -64,7 +85,9 @@ GENERATION_PROMPT_TEMPLATE = (
     "STYLE POLICY:\n"
     "{style_rule}\n\n"
     "CONSTRAINTS:\n"
-    "- Preserve original meaning exactly. Do not invent new facts.\n"
+    "- Preserve the user's intent and all factual constraints from INTENT JSON. Do not invent new facts.\n"
+    "- Use natural business Japanese phrasing. Avoid overly literal translation from the source language.\n"
+    "- Avoid awkward openings like starting with 私は unless the original clearly requires it.\n"
     "- Keep names, numbers, dates, times, and URLs unchanged.\n"
     "- Do not invent speaker/listener relationship.\n"
     "- If context is unclear, prefer neutral polite wording.\n"

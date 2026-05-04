@@ -22,6 +22,8 @@ def polish_message(request: PolishRequest) -> dict:
         tone=request.tone,
         purpose=request.purpose,
         language=request.language,
+        source_language=request.source_language,
+        detail_level=request.detail_level,
     )
     return result
 

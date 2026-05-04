@@ -10,7 +10,6 @@ client = TestClient(app)
 def test_polish_endpoint_returns_structured_response():
     mocked_response = {
         "rewritten_message": "恐れ入りますが、締切を2日延長いただけますでしょうか。",
-        "explanations": ["Adjusted formality", "Added respectful request phrasing"],
         "quick_variants": {
             "formal": "恐れ入りますが、締切を2日延長いただけますでしょうか。",
             "friendly": "すみません、締切を2日延ばしていただけると助かります。",
@@ -25,6 +24,7 @@ def test_polish_endpoint_returns_structured_response():
             "/api/v1/polish",
             json={
                 "language": "ja",
+                "source_language": "vi",
                 "original_message": "締切を2日延ばしたいです",
                 "recipient_type": "professor",
                 "tone": "formal",
@@ -34,6 +34,7 @@ def test_polish_endpoint_returns_structured_response():
     assert res.status_code == 200
     body = res.json()
     assert body["rewritten_message"]
+    assert "explanations" not in body
     assert set(body["quick_variants"].keys()) == {
         "formal",
         "friendly",

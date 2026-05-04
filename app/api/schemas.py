@@ -15,6 +15,8 @@ PurposeType = Literal[
     "other",
 ]
 
+DetailLevel = Literal["concise", "balanced", "detailed"]
+
 
 class PolishConstraints(BaseModel):
     max_length: int | None = Field(default=None, ge=20, le=3000)
@@ -23,10 +25,12 @@ class PolishConstraints(BaseModel):
 
 class PolishRequest(BaseModel):
     language: Literal["ja"] = "ja"
+    source_language: Literal["vi", "ja", "en"] = "vi"
     original_message: str = Field(min_length=1, max_length=3000)
     recipient_type: RecipientType = "unknown"
     tone: ToneType = "neutral"
     purpose: PurposeType = "other"
+    detail_level: DetailLevel = "balanced"
     constraints: PolishConstraints | None = None
 
 
@@ -52,7 +56,6 @@ class SafetyFlags(BaseModel):
 
 class PolishResponse(BaseModel):
     rewritten_message: str
-    explanations: list[str]
     quick_variants: QuickVariants
     meta: PolishMeta
     safety_flags: SafetyFlags

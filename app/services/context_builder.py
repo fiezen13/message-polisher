@@ -1,3 +1,19 @@
+from dataclasses import asdict, dataclass
+
+
+@dataclass
+class Context:
+    speaker_role: str
+    listener_role: str
+    situation: str
+    formality: str
+    has_multiline: bool
+    channel: str
+
+    def to_dict(self) -> dict:
+        return asdict(self)
+
+
 def _detect_situation(text: str) -> str:
     """Infer a coarse situation label from Japanese keywords."""
     leave_keywords = ("休", "有給", "休暇", "欠勤")
@@ -16,7 +32,7 @@ def _detect_situation(text: str) -> str:
     return "general"
 
 
-def build_context(raw_text: str, style_mode: str) -> dict:
+def build_context(raw_text: str, style_mode: str) -> Context:
     """Build semantic + technical context for Japanese rewriting."""
     has_multiline = "\n" in raw_text
     situation = _detect_situation(raw_text)
@@ -32,11 +48,11 @@ def build_context(raw_text: str, style_mode: str) -> dict:
         speaker_role = "staff"
         listener_role = "customer"
 
-    return {
-        "speaker_role": speaker_role,
-        "listener_role": listener_role,
-        "situation": situation,
-        "formality": style_mode,
-        "has_multiline": has_multiline,
-        "channel": "chat",
-    }
+    return Context(
+        speaker_role=speaker_role,
+        listener_role=listener_role,
+        situation=situation,
+        formality=style_mode,
+        has_multiline=has_multiline,
+        channel="chat",
+    )

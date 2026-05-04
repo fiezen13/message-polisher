@@ -1,0 +1,26 @@
+[
+  {
+    "id": "case_001",
+    "input": "部長、明日有給を取りたいです。よろしく。",
+    "style_mode": "formal_keigo",
+    "expected_style": "formal_keigo",
+    "required_facts": ["明日", "有給"],
+    "must_include_any": ["お願いいたします", "いただけますと幸いです", "申し上げます"]
+  },
+  {
+    "id": "case_002",
+    "input": "会議を10:00から11:00に変更して",
+    "style_mode": "neutral_business",
+    "expected_style": "neutral_business",
+    "required_facts": ["10:00", "11:00"],
+    "must_include_any": ["お願いいたします", "ます", "です"]
+  },
+  {
+    "id": "case_003",
+    "input": "ごめん、資料送れるの遅れる",
+    "style_mode": "casual_polite",
+    "expected_style": "casual_polite",
+    "required_facts": ["資料"],
+    "must_include_any": ["すみません", "遅れます", "お願いします"]
+  }
+]
